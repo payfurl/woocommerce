@@ -1,0 +1,24 @@
+name: SDK auto-tests
+
+on: [workflow_dispatch, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate appsettings
+        run: docker run --rm ghcr.io/payfurl/config-build:main > ./tests/config.json
+      - name: Run tests
+        uses: php-actions/phpunit@v3
+        with:
+          configuration: tests/phpunit.xml
+          test_suffix: Test.php
+          args: --no-coverage
