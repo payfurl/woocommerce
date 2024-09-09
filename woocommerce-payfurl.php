@@ -1,11 +1,15 @@
 <?php
 /**
- * Plugin Name:     Payfurl
- * Version:         0.1.0
- * Author:          The WordPress Contributors
- * License:         GPL-2.0-or-later
- * License URI:     https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:     payfurl
+ * Plugin Name:         WooCommerce PayFURL Extension
+ * Plugin URI:          https://github.com/payfurl/woocommerce
+ * Description:         PayFURL payment extension for WooCommerce.
+ * Version:             1.0.0
+ * Author:              PayFURL
+ * Author URI:          https://payfurl.com/
+ * Requires Plugins:    woocommerce
+ * License:             GPL-2.0-or-later
+ * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:         woocommerce-payfurl
  *
  * @package         create-block
  */
@@ -13,28 +17,29 @@
 $loader = require_once(__DIR__ . '/vendor/autoload.php');
 $loader->addPsr4('payFURL\\', __DIR__ . '/vendor/payfurl/sdk/src');
 
-add_action( 'before_woocommerce_init', function() {
-    if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
+add_action('before_woocommerce_init', function () {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
     }
-} );
+});
 
-add_action('woocommerce_blocks_loaded', function() {
+add_action('woocommerce_blocks_loaded', function () {
     require_once __DIR__ . '/includes/payfurl-blocks-integration.php';
 
-	add_action(
-		'woocommerce_blocks_payment_method_type_registration',
-		function( $integration_registry ) {
-			$integration_registry->register( new Payfurl_Blocks_Integration() );
-		}
-	);
+    add_action(
+        'woocommerce_blocks_payment_method_type_registration',
+        function ($integration_registry) {
+            $integration_registry->register(new Payfurl_Blocks_Integration());
+        }
+    );
 });
 
 
 add_filter('woocommerce_payment_gateways', function ($gateways) {
     if (is_admin()) {
         $gateways[] = WC_Payfurl::class;
-    } else {
+    }
+    else {
         $gateways[] = WC_Payfurl_Card::class;
         $gateways[] = WC_Payfurl_Paypal::class;
         $gateways[] = WC_Payfurl_Checkout::class;
@@ -57,16 +62,16 @@ add_action('plugins_loaded', function () {
     require_once __DIR__ . '/includes/class-wc-payment-token-payfurl.php';
 });
 
-add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), function ( array $links ) {
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), function (array $links) {
     $settings_url_params = [
-        'page'    => 'wc-settings',
-        'tab'     => 'checkout',
+        'page' => 'wc-settings',
+        'tab' => 'checkout',
         'section' => 'payfurl',
     ];
 
     $plugin_links = [
-        '<a href="' . esc_attr( admin_url( add_query_arg( $settings_url_params, 'admin.php' ) ) ) . '">' . esc_html__( 'Settings', 'woocommerce-payfurl' ) . '</a>',
+        '<a href="' . esc_attr(admin_url(add_query_arg($settings_url_params, 'admin.php'))) . '">' . esc_html__('Settings', 'woocommerce-payfurl') . '</a>',
     ];
 
-    return array_merge( $plugin_links, $links );
-} );
+    return array_merge($plugin_links, $links);
+});
