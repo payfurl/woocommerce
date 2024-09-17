@@ -22,7 +22,7 @@ export const PayfurlCardComponent = ( props ) => {
         threeDSEmail: billing?.billingData?.email,
         createNetworkToken: false,
         tokenAuthenticationEnabled: false,
-        clickToPayEnabled: false,
+        clickToPayEnabled: true,
       });
       setExtraInfo(window._pf, billing, cartData);
     }
