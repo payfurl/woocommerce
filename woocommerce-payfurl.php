@@ -46,6 +46,7 @@ add_filter('woocommerce_payment_gateways', function ($gateways) {
         $gateways[] = WC_Payfurl_PayTo::class;
         $gateways[] = WC_Payfurl_GooglePay::class;
         $gateways[] = WC_Payfurl_ApplePay::class;
+        $gateways[] = WC_Payfurl_Shift::class;
     }
     return $gateways;
 });
@@ -59,6 +60,7 @@ add_action('plugins_loaded', function () {
     require_once __DIR__ . '/includes/class-wc-payfurl-payto.php';
     require_once __DIR__ . '/includes/class-wc-payfurl-googlepay.php';
     require_once __DIR__ . '/includes/class-wc-payfurl-applepay.php';
+    require_once __DIR__ . '/includes/class-wc-payfurl-shift.php';
     require_once __DIR__ . '/includes/class-wc-payment-token-payfurl.php';
 });
 

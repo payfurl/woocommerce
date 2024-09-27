@@ -115,8 +115,8 @@ if (isSafari() && settings?.enable_applepay && settings?.providersInfo?.hasApple
 if (settings?.providersInfo?.hasBnplProviders) {
   settings?.providersInfo?.bnplProviders.forEach((provider) => {
     registerPaymentMethod({
-      name: 'payfurl_checkout',
-      paymentMethodId: 'payfurl_checkout',
+      name: 'payfurl_'+provider.providerType,
+      paymentMethodId: 'payfurl_'+provider.providerType,
       content: <PayfurlCheckoutComponent provider={ provider } />,
       edit: <PayfurlCheckoutComponent provider={ provider } />,
       canMakePayment: (params) => new Promise((resolve) => {
