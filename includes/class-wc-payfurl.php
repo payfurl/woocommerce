@@ -245,4 +245,14 @@ class WC_Payfurl extends WC_Payment_Gateway
             'redirect' => $this->get_return_url($order),
         ];
     }
+
+    protected function return_error($order, $error_message)
+    {
+        $logger = wc_get_logger();
+        $logger->error($error_message, ['source' => $this->id]);
+
+        wc_add_notice($error_message, 'error');
+        $order->update_status('failed', $error_message);
+        return ['result' => 'failure', 'message' => $error_message];
+    }
 }

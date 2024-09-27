@@ -60,8 +60,7 @@ class WC_Payfurl_Card extends WC_Payfurl
                                                                        'paymentMethodId' => $token->get_token(),
                                                                    ], $payment_details));
             if ($res['errorMessage']) {
-                wc_add_notice($res['errorMessage'], 'error');
-                return;
+                return $this->return_error($order, $res['errorMessage']);
             }
 
             return $this->finish_payment($order, $res['chargeId']);
@@ -70,8 +69,7 @@ class WC_Payfurl_Card extends WC_Payfurl
         if ($data['wc-payfurl_card-new-payment-method']) {
             $res = WC_Payfurl_SDK::get_instance()->create_payment_method($data['payfurl_token']);
             if ($res['errorMessage']) {
-                wc_add_notice($res['errorMessage'], 'error');
-                return;
+                return $this->return_error($order, $res['errorMessage']);
             }
 
             if ($res['paymentMethodId']) {
@@ -105,8 +103,7 @@ class WC_Payfurl_Card extends WC_Payfurl
                                                                        'paymentMethodId' => $res['paymentMethodId'],
                                                                    ], $payment_details));
             if ($res['errorMessage']) {
-                wc_add_notice($res['errorMessage'], 'error');
-                return;
+                return $this->return_error($order, $res['errorMessage']);
             }
         }
         else {
@@ -115,8 +112,7 @@ class WC_Payfurl_Card extends WC_Payfurl
                                                                        'token' => $data['payfurl_token'],
                                                                    ], $payment_details));
             if ($res['errorMessage']) {
-                wc_add_notice($res['errorMessage'], 'error');
-                return;
+                return $this->return_error($order, $res['errorMessage']);
             }
         }
 
@@ -127,5 +123,4 @@ class WC_Payfurl_Card extends WC_Payfurl
     {
         return false;
     }
-
 }
