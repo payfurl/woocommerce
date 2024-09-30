@@ -45,8 +45,8 @@ export const setExtraInfo = (pf, billing, cartData) => {
         name: item.name,
         quantity: item.quantity || 1,
         sku: item.sku,
-        unitPrice: Number(item.prices?.price),
-        totalAmount: Number(item.totals?.line_total),
+        unitPrice: normalizeAmount(Number(item.prices?.price), wcSettings.currency.precision),
+        totalAmount: normalizeAmount(Number(item.totals?.line_total), wcSettings.currency.precision),
       })),
     });
 };
