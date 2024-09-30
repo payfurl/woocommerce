@@ -20,6 +20,7 @@ export const PayfurlCheckoutComponent = (props) => {
       );
       const currency = wcSettings.currency.code;
       loaded = true;
+      setExtraInfo(window._pf, billing, cartData);
       window._pf
         .addCheckout('payfurl-'+provider.providerType+'-component', amount, currency, provider.providerType, provider.providerId, {}, provider.options)
         .onFailure((message) => {
@@ -31,7 +32,6 @@ export const PayfurlCheckoutComponent = (props) => {
           const elements = document.getElementsByClassName('wc-block-components-checkout-place-order-button');
           elements[0].click();
         });
-      setExtraInfo(window._pf, billing, cartData);
     }
   }, []);
 

@@ -122,7 +122,7 @@ if (settings?.providersInfo?.hasBnplProviders) {
       canMakePayment: (params) => new Promise((resolve) => {
         resolve(true);
       }),
-      label: <strong>{ provider.providerType === 'azupay' ? 'PayID' : capitalizeFirstLetter(provider.providerType) }</strong>,
+      label: <strong>{ getTitleByProviderType(provider.providerType) }</strong>,
       ariaLabel: 'PayFURL Payments',
       supports: {
         features: ['products'],
@@ -133,3 +133,11 @@ if (settings?.providersInfo?.hasBnplProviders) {
   });
 }
 
+function getTitleByProviderType(providerType) {
+  switch (providerType) {
+    case 'azupay': return 'PayID';
+    case 'pay_by_account': return 'Pay by Account';
+    case 'upi': return 'UPI';
+    default: return capitalizeFirstLetter(providerType);
+  }
+}
