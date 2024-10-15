@@ -34,7 +34,7 @@ class WC_Payment_Token_Payfurl extends WC_Payment_Token
     public function get_display_name($deprecated = '')
     {
         $display = sprintf(
-            __('%1$s %2$s...%3$s (expires %4$s/%5$s)', 'woocommerce'),
+            '%1$s %2$s...%3$s (expires %4$s/%5$s)',
             wc_get_credit_card_type_label($this->get_card_type()),
             $this->get_bin(),
             $this->get_last4(),
