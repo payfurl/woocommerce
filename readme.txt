@@ -1,5 +1,5 @@
 === PayFURL Extension for WooCommerce ===
-Contributors: payfurl
+Contributors: davidatpayfurldotcom
 Tags: woocommerce, payfurl
 Requires at least: 6.5
 Tested up to: 6.6
