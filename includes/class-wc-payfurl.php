@@ -52,40 +52,40 @@ class WC_Payfurl extends WC_Payment_Gateway
     {
         $this->form_fields = array(
             'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce-payfurl'),
-                'label' => __('Enable Payfurl Gateway', 'woocommerce-payfurl'),
+                'title' => 'Enable/Disable',
+                'label' => 'Enable Payfurl Gateway',
                 'type' => 'checkbox',
                 'description' => '',
                 'default' => 'no'
             ),
             'enable_applepay' => array(
-                'title' => __('Apple Pay', 'woocommerce-payfurl'),
-                'label' => __('Enable Apple Pay', 'woocommerce-payfurl'),
+                'title' => 'Apple Pay',
+                'label' => 'Enable Apple Pay',
                 'type' => 'checkbox',
                 'description' => '',
                 'default' => 'no'
             ),
             'enable_googlepay' => array(
-                'title' => __('Google Pay', 'woocommerce-payfurl'),
-                'label' => __('Enable Google Pay', 'woocommerce-payfurl'),
+                'title' => 'Google Pay',
+                'label' => 'Enable Google Pay',
                 'type' => 'checkbox',
                 'description' => '',
                 'default' => 'no',
             ),
             'title' => array(
-                'title' => __('Title', 'woocommerce-payfurl'),
+                'title' => 'Title',
                 'type' => 'text',
-                'default' => __('Debit / Credit Card', 'woocommerce-payfurl'),
+                'default' => 'Debit / Credit Card',
             ),
             'environment' => array(
-                'title' => __('Environment', 'woocommerce-payfurl'),
+                'title' => 'Environment',
                 'type' => 'select',
                 'default' => 'local',
                 'options' => array(
-                    'local' => __('Local', 'woocommerce-payfurl'),
-                    'development' => __('Development', 'woocommerce-payfurl'),
-                    'sandbox' => __('Sandbox', 'woocommerce-payfurl'),
-                    'production' => __('Production', 'woocommerce-payfurl'),
+                    'local' => 'Local',
+                    'development' => 'Development',
+                    'sandbox' => 'Sandbox',
+                    'production' => 'Production',
                 ),
                 'onchange' => 'document.querySelectorAll(\'[meta=\\\'key\\\']\').forEach(function(el){el.parentElement.parentElement.parentElement.style.display=(event.target.value==el.getAttribute(\'environment\')?\'\':\'none\')});',
             ),
@@ -154,8 +154,8 @@ class WC_Payfurl extends WC_Payment_Gateway
                 ),
             ),
             'debug' => array(
-                'title' => __('Debug', 'woocommerce-payfurl'),
-                'label' => __('Enable Debug Mode', 'woocommerce-payfurl'),
+                'title' => 'Debug',
+                'label' => 'Enable Debug Mode',
                 'type' => 'checkbox',
                 'description' => '',
                 'default' => 'no'
@@ -166,17 +166,91 @@ class WC_Payfurl extends WC_Payment_Gateway
 
     public function admin_options()
     {
-        echo '<table class="form-table">' . $this->generate_settings_html($this->get_form_fields(), false) . '</table>';
+        $output = '<table class="form-table">' . $this->generate_settings_html($this->get_form_fields(), false) . '</table>';
+        echo wp_kses($output, [
+            'table' => [
+                'class' => [],
+            ],
+            'th' => [
+                'class' => [],
+                'scope' => [],
+                'valign' => [],
+                'style' => [],
+                'meta' => [],
+                'environment' => [],
+            ],
+            'tr' => [
+                'class' => [],
+                'valign' => [],
+                'style' => [],
+                'meta' => [],
+                'environment' => [],
+            ],
+            'td' => [
+                'class' => [],
+                'valign' => [],
+                'style' => [],
+                'meta' => [],
+                'environment' => [],
+            ],
+            'fieldset' => [
+                'class' => [],
+                'style' => [],
+                'meta' => [],
+            ],
+            'legend' => [
+                'class' => [],
+                'style' => [],
+            ],
+            'span' => [
+                'class' => [],
+                'style' => [],
+            ],
+            'input' => [
+                'name' => [],
+                'value' => [],
+                'type' => [],
+                'class' => [],
+                'placeholder' => [],
+                'size' => [],
+                'maxlength' => [],
+                'checked' => [],
+                'readonly' => [],
+                'disabled' => [],
+                'id' => [],
+                'style' => [],
+                'meta' => [],
+                'environment' => [],
+            ],
+            'label' => [
+                'for' => [],
+                'class' => [],
+                'style' => [],
+            ],
+            'select' => [
+                'name' => [],
+                'class' => [],
+                'id' => [],
+                'style' => [],
+                'meta' => [],
+                'environment' => [],
+            ],
+            'option' => [
+                'value' => [],
+                'selected' => [],
+            ],
+        ]);
+
         echo '<script>';
         echo 'function payfurl_environment_change() {';
         echo 'var environment = document.getElementById("woocommerce_payfurl_environment").value;';
-        echo 'console.log(environment);';
+        echo 'if (!environment) { setTimeout(() => {payfurl_environment_change()}, 100); return; }';
         echo 'document.querySelectorAll(\'[meta=\\\'key\\\']\').forEach(function(el){el.parentElement.parentElement.parentElement.style.display=(environment==el.getAttribute(\'environment\')?\'\':\'none\')});';
         echo '}';
         echo 'setTimeout(() => {';
         echo 'document.getElementById("woocommerce_payfurl_environment").addEventListener("change", payfurl_environment_change);';
         echo 'payfurl_environment_change();';
-        echo '}, 1000);';
+        echo '}, 100);';
         echo '</script>';
     }
 
@@ -212,7 +286,7 @@ class WC_Payfurl extends WC_Payment_Gateway
     {
 
         // we need JavaScript to process a token only on cart/checkout pages, right?
-        if (!is_cart() && !is_checkout() && !isset($_GET['pay_for_order'])) {
+        if (!is_cart() && !is_checkout()) {
             return;
         }
 
@@ -221,7 +295,7 @@ class WC_Payfurl extends WC_Payment_Gateway
             return;
         }
 
-        wp_enqueue_script('payfurl', 'https://assets.payfurl.com/v4.6.16.742/js/payfurl.js');
+        wp_enqueue_script('payfurl', 'https://assets.payfurl.com/v4.6.16.742/js/payfurl.js', [], 'v4.6.16.742', ['in_footer' => false]);
     }
 
     public function get_providers_info($amount, $currency)

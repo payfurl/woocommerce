@@ -1,15 +1,14 @@
 <?php
 /**
- * Plugin Name:         WooCommerce PayFURL Extension
+ * Plugin Name:         PayFURL Extension for WooCommerce
  * Plugin URI:          https://github.com/payfurl/woocommerce
  * Description:         PayFURL payment extension for WooCommerce.
  * Version:             1.0.0
  * Author:              PayFURL
  * Author URI:          https://payfurl.com/
  * Requires Plugins:    woocommerce
- * License:             GPL-2.0-or-later
- * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:         woocommerce-payfurl
+ * License:             GPL-3.0-or-later
+ * License URI:         https://www.gnu.org/licenses/gpl-3.0.html
  *
  * @package         create-block
  */
@@ -84,7 +83,7 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), function (array $
     ];
 
     $plugin_links = [
-        '<a href="' . esc_attr(admin_url(add_query_arg($settings_url_params, 'admin.php'))) . '">' . esc_html__('Settings', 'woocommerce-payfurl') . '</a>',
+        '<a href="' . esc_attr(admin_url(add_query_arg($settings_url_params, 'admin.php'))) . '">' . 'Settings' . '</a>',
     ];
 
     return array_merge($plugin_links, $links);
