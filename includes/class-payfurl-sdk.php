@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 use payFURL\Sdk as PayFurlSDK;
 

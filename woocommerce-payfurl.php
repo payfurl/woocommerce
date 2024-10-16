@@ -13,6 +13,8 @@
  * @package         create-block
  */
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 $loader = require_once(__DIR__ . '/vendor/autoload.php');
 $loader->addPsr4('payFURL\\', __DIR__ . '/vendor/payfurl/sdk/src');
 
