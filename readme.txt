@@ -18,6 +18,9 @@ This plugin integrates PayFURL payment orchestrator with WooCommerce, allowing y
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Go to WooCommerce > Settings > Payments and configure the PayFURL settings.
 
+== External services ==
+This plugin connects to the payFURL API to collect payment details and process payments. Payment details are collected when a payment is processed through payFURL on the checkout page.
+
 == Frequently Asked Questions ==
 
 = How do I obtain API keys? =
