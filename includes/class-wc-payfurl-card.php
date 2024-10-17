@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WC_Payfurl_Card extends WC_Payfurl
 {

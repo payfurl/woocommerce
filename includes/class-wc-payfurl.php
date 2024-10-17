@@ -1,7 +1,5 @@
 <?php
-if (!defined('ABSPATH')) {
-    exit;
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 // https://woocommerce.github.io/code-reference/files/woocommerce-includes-abstracts-abstract-wc-payment-gateway.html
 class WC_Payfurl extends WC_Payment_Gateway
@@ -80,78 +78,27 @@ class WC_Payfurl extends WC_Payment_Gateway
             'environment' => array(
                 'title' => 'Environment',
                 'type' => 'select',
-                'default' => 'local',
+                'default' => 'sandbox',
                 'options' => array(
-                    'local' => 'Local',
-                    'development' => 'Development',
                     'sandbox' => 'Sandbox',
                     'production' => 'Production',
-                ),
-                'onchange' => 'document.querySelectorAll(\'[meta=\\\'key\\\']\').forEach(function(el){el.parentElement.parentElement.parentElement.style.display=(event.target.value==el.getAttribute(\'environment\')?\'\':\'none\')});',
-            ),
-            'local_public_key' => array(
-                'title' => 'Local Public Key',
-                'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'local'
-                ),
-            ),
-            'local_private_key' => array(
-                'title' => 'Local Private Key',
-                'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'local'
-                ),
-            ),
-            'development_public_key' => array(
-                'title' => 'Development Public Key',
-                'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'development'
-                ),
-            ),
-            'development_private_key' => array(
-                'title' => 'Development Private Key',
-                'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'development'
                 ),
             ),
             'sandbox_public_key' => array(
                 'title' => 'Sandbox Public Key',
                 'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'sandbox'
-                ),
             ),
             'sandbox_private_key' => array(
                 'title' => 'Sandbox Private Key',
                 'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'sandbox'
-                ),
             ),
             'production_public_key' => array(
                 'title' => 'Production Public Key',
                 'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'production'
-                ),
             ),
             'production_private_key' => array(
                 'title' => 'Production Private Key',
                 'type' => 'password',
-                'custom_attributes' => array(
-                    'meta' => 'key',
-                    'environment' => 'production'
-                ),
             ),
             'debug' => array(
                 'title' => 'Debug',
@@ -161,97 +108,6 @@ class WC_Payfurl extends WC_Payment_Gateway
                 'default' => 'no'
             ),
         );
-    }
-
-
-    public function admin_options()
-    {
-        $output = '<table class="form-table">' . $this->generate_settings_html($this->get_form_fields(), false) . '</table>';
-        echo wp_kses($output, [
-            'table' => [
-                'class' => [],
-            ],
-            'th' => [
-                'class' => [],
-                'scope' => [],
-                'valign' => [],
-                'style' => [],
-                'meta' => [],
-                'environment' => [],
-            ],
-            'tr' => [
-                'class' => [],
-                'valign' => [],
-                'style' => [],
-                'meta' => [],
-                'environment' => [],
-            ],
-            'td' => [
-                'class' => [],
-                'valign' => [],
-                'style' => [],
-                'meta' => [],
-                'environment' => [],
-            ],
-            'fieldset' => [
-                'class' => [],
-                'style' => [],
-                'meta' => [],
-            ],
-            'legend' => [
-                'class' => [],
-                'style' => [],
-            ],
-            'span' => [
-                'class' => [],
-                'style' => [],
-            ],
-            'input' => [
-                'name' => [],
-                'value' => [],
-                'type' => [],
-                'class' => [],
-                'placeholder' => [],
-                'size' => [],
-                'maxlength' => [],
-                'checked' => [],
-                'readonly' => [],
-                'disabled' => [],
-                'id' => [],
-                'style' => [],
-                'meta' => [],
-                'environment' => [],
-            ],
-            'label' => [
-                'for' => [],
-                'class' => [],
-                'style' => [],
-            ],
-            'select' => [
-                'name' => [],
-                'class' => [],
-                'id' => [],
-                'style' => [],
-                'meta' => [],
-                'environment' => [],
-            ],
-            'option' => [
-                'value' => [],
-                'selected' => [],
-            ],
-        ]);
-
-        echo '<script>';
-        echo 'function payfurl_environment_change() {';
-        echo 'var environment = document.getElementById("woocommerce_payfurl_environment").value;';
-        echo 'if (!environment) { setTimeout(() => {payfurl_environment_change()}, 100); return; }';
-        echo 'document.querySelectorAll(\'[meta=\\\'key\\\']\').forEach(function(el){el.parentElement.parentElement.parentElement.style.display=(environment==el.getAttribute(\'environment\')?\'\':\'none\')});';
-        echo '}';
-        echo 'setTimeout(() => {';
-        echo 'document.getElementById("woocommerce_payfurl_environment").addEventListener("change", payfurl_environment_change);';
-        echo 'payfurl_environment_change();';
-        echo '}, 100);';
-        echo '</script>';
     }
 
     public function get_public_key()

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
@@ -34,7 +35,7 @@ class Payfurl_Blocks_Integration extends AbstractPaymentMethodType
     {
         wp_add_inline_script(
             'payfurl_checkout',
-            'window._pf = payfurl?.init("' . $this->gateway->environment . '","' . $this->gateway->get_public_key() . '",' . ($this->gateway->debug == 'no'? 'false' : 'true') . ');',
+            'window._pf = payfurl?.init("' . esc_html($this->gateway->environment) . '","' . esc_html($this->gateway->get_public_key()) . '",' . ($this->gateway->debug == 'no'? 'false' : 'true') . ');',
             'after'
         );
 
@@ -47,8 +48,8 @@ class Payfurl_Blocks_Integration extends AbstractPaymentMethodType
     public function get_payment_method_data()
     {
         return [
-            'title' => $this->gateway->get_option('title', ''),
-            'description' => $this->gateway->get_option('description', ''),
+            'title' => esc_html($this->gateway->get_option('title', '')),
+            'description' => esc_html($this->gateway->get_option('description', '')),
             'providersInfo' => $this->gateway->get_providers_info(WC()->cart? WC()->cart->get_total('') : 0, get_woocommerce_currency()),
             'enable_googlepay' => $this->gateway->enable_googlepay,
             'enable_applepay' => $this->gateway->enable_applepay,

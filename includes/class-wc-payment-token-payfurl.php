@@ -1,8 +1,5 @@
 <?php
-
-if (!defined('ABSPATH')) {
-    exit;
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 class WC_Payment_Token_Payfurl extends WC_Payment_Token
 {
