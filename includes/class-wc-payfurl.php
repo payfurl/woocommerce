@@ -151,7 +151,7 @@ class WC_Payfurl extends WC_Payment_Gateway
             return;
         }
 
-        wp_enqueue_script('payfurl', 'https://assets.payfurl.com/v4.6.16.742/js/payfurl.js', [], 'v4.6.16.742', ['in_footer' => false]);
+        wp_enqueue_script('payfurl', 'https://assets.payfurl.com/v4.6.24/js/payfurl.js', [], 'v4.6.24', ['in_footer' => false]);
     }
 
     public function get_providers_info($amount, $currency)
