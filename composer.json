@@ -1,5 +1,5 @@
 {
     "require": {
-        "payfurl/phpsdk": "^2.1"
+        "payfurl/phpsdk": "^2.2"
     }
 }
