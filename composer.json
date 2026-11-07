@@ -1,5 +1,32 @@
 {
-    "require": {
-        "payfurl/phpsdk": "^2.2"
-    }
+	"name": "payfurl/woocommerce",
+	"description": "PayFURL Extension for WooCommerce",
+	"type": "wordpress-plugin",
+	"license": "GPL-3.0-or-later",
+	"require": {
+		"php": ">=8.1",
+		"payfurl/phpsdk": "^2.2"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.6",
+		"yoast/phpunit-polyfills": "^4.0",
+		"wp-phpunit/wp-phpunit": "^7.1",
+		"wp-coding-standards/wpcs": "^3.4",
+		"woocommerce/woocommerce-sniffs": "^2.0",
+		"phpstan/phpstan": "^2.1",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"php-stubs/woocommerce-stubs": "^11.2"
+	},
+	"config": {
+		"platform": {
+			"php": "8.1.0"
+		},
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"phpcs": "phpcs",
+		"phpstan": "phpstan analyse --no-progress --memory-limit=1G"
+	}
 }

@@ -1,0 +1,97 @@
+# Static checks, unit tests on every supported PHP version, and WordPress.org's Plugin Check, on every pull request.
+# The browser e2e suite runs in payfurl/platform (`just e2e woocommerce`, or `just e2e` here), against the payFURL
+# stack built from source, before each release.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Static checks and JS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: composer install --no-interaction --no-progress
+      - run: npm ci --no-audit --no-fund
+      - name: PHPCS (WordPress and WooCommerce standards)
+        run: vendor/bin/phpcs -q
+      - name: PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: ESLint
+        run: npm run lint:js
+      - name: JS unit tests
+        run: npm run test:unit
+      - name: Build
+        run: npm run build
+
+  phpunit:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: composer install --no-interaction --no-progress
+      - run: npm ci --no-audit --no-fund
+      # WordPress, WooCommerce (.wp-env.json) and this checkout, on the matrix's PHP.
+      - name: Start wp-env
+        env:
+          WP_ENV_PHP_VERSION: ${{ matrix.php }}
+        # The development site mounts the release build (dist/), which these tests don't need: only its directory.
+        run: |
+          mkdir -p dist/payfurl-extension-for-woocommerce
+          npx wp-env start
+      - name: Unit tests
+        run: npx wp-env run tests-cli --env-cwd=wp-content/plugins/payfurl-extension-for-woocommerce vendor/bin/phpunit
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      # The release build, as .github/workflows/release.yml deploys it.
+      - name: Build the release
+        run: |
+          npm ci --no-audit --no-fund && npm run build
+          composer install --no-dev --no-interaction --no-progress --optimize-autoloader
+          mkdir -p dist/payfurl-extension-for-woocommerce
+          rsync -a --exclude-from=.distignore ./ dist/payfurl-extension-for-woocommerce/
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: dist/payfurl-extension-for-woocommerce
+          slug: payfurl-extension-for-woocommerce

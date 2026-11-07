@@ -1,0 +1,17 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"phpVersion": "8.3",
+	"plugins": [ "https://downloads.wordpress.org/plugin/woocommerce.11.2.2.zip" ],
+	"env": {
+		"development": {
+			"mappings": {
+				"wp-content/plugins/payfurl-extension-for-woocommerce": "./dist/payfurl-extension-for-woocommerce"
+			}
+		},
+		"tests": {
+			"mappings": {
+				"wp-content/plugins/payfurl-extension-for-woocommerce": "."
+			}
+		}
+	}
+}

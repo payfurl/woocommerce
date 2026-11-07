@@ -1,12 +1,29 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
+/**
+ * Shift payments.
+ *
+ * @package PayfurlExtensionForWooCommerce
+ */
 
-class WC_Payfurl_Shift extends WC_Payfurl_Checkout
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->id = 'payfurl_shift';
-        $this->method_title = 'Payfurl Shift';
-    }
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * The Shift checkout method. The browser SDK creates the charge; WC_Payfurl_Checkout checks it.
+ */
+class WC_Payfurl_Shift extends WC_Payfurl_Checkout {
+
+	/**
+	 * Gateway ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'payfurl_shift';
+
+	/**
+	 * Set up the gateway.
+	 */
+	public function __construct() {
+		parent::__construct();
+		$this->title = __( 'Shift', 'payfurl-extension-for-woocommerce' );
+	}
 }

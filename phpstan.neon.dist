@@ -1,0 +1,18 @@
+includes:
+	- vendor/szepeviktor/phpstan-wordpress/extension.neon
+parameters:
+	level: 5
+	paths:
+		- woocommerce-payfurl.php
+		- includes
+	scanFiles:
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+	bootstrapFiles:
+		- tests/php/phpstan-bootstrap.php
+	treatPhpDocTypesAsCertain: false
+	ignoreErrors:
+		# WooCommerce's settings save hook: WC_Settings_API::process_admin_options() returns whether it saved.
+		-
+			identifier: return.void
+			path: includes/class-wc-payfurl.php

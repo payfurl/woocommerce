@@ -1,127 +1,104 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
+/**
+ * Card payments.
+ *
+ * @package PayfurlExtensionForWooCommerce
+ */
 
-class WC_Payfurl_Card extends WC_Payfurl
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->id = 'payfurl_card';
-        $this->method_title = 'Payfurl Card';
-    }
+defined( 'ABSPATH' ) || exit;
 
-    public function process_payment($order_id)
-    {
-        $order = wc_get_order($order_id);
-        $data = $this->get_post_data();
-//        print_r($data);
-//        print_r($order->get_items());
-//        die;
-//        print_r($data);
-//        print_r($order);
-//        die;
+/**
+ * Cards: the browser SDK's card form (with Click to Pay) gives a single-use token, which the plugin charges with
+ * the order's details. A logged-in customer can save the card (a WooCommerce payment token holding the payFURL
+ * payment method ID) and pay with it later.
+ */
+class WC_Payfurl_Card extends WC_Payfurl {
 
-        $payment_details = [
-            'amount' => $order->get_total(),
-            'currency' => $order->get_currency(),
-            'reference' => 'Order #' . $order->get_id(),
-            'email' => $order->get_billing_email(),
-            'phone' => $order->get_billing_phone(),
-            'firstName' => $order->get_billing_first_name(),
-            'lastName' => $order->get_billing_last_name(),
-            'order' => [
-                'orderNumber' => strval($order->get_id()),
-                'freightAmount' => $order->get_shipping_total(),
-                'items' => [],
-            ],
-            'address' => [
-                'line1' => $order->get_billing_address_1(),
-                'line2' => $order->get_billing_address_2(),
-                'city' => $order->get_billing_city(),
-                'state' => $order->get_billing_state(),
-                'postalCode' => $order->get_billing_postcode(),
-                'country' => $order->get_billing_country(),
-            ]
-        ];
+	/**
+	 * Gateway ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'payfurl_card';
 
-        foreach ($order->get_items() as $item_id => $item) {
-            $product = $item->get_product();
-            $payment_details['order']['items'][] = [
-                'product_code' => strval($product->get_id()),
-                'description' => $item->get_name(),
-                'quantity' => $item->get_quantity(),
-                'amount' => $product->get_price(),
-                'taxAmount' => $item->get_total_tax(),
-            ];
-        }
+	/**
+	 * Set up the gateway.
+	 */
+	public function __construct() {
+		parent::__construct();
+		$this->supports[] = 'tokenization';
+	}
 
-        if ($data['issavedtoken']) {
-            $token = WC_Payment_Tokens::get($data['token']);
-            $res = WC_Payfurl_SDK::get_instance()->charge_by_payment_method(array_merge([
-                                                                       'paymentMethodId' => $token->get_token(),
-                                                                   ], $payment_details));
-            if ($res['errorMessage']) {
-                return $this->return_error($order, $res['errorMessage']);
-            }
+	/**
+	 * Charges the card form's token, a card the customer saves now, or one of their saved cards.
+	 *
+	 * @param int $order_id The order.
+	 * @return array
+	 */
+	public function process_payment( $order_id ) {
+		$order   = wc_get_order( $order_id );
+		$data    = $this->get_post_data();
+		$request = $this->charge_request( $order );
 
-            return $this->finish_payment($order, $res['chargeId']);
-        }
+		// WooCommerce's key for a saved card (`new` for a new one); the Checkout block also sends `isSavedToken` and
+		// `token` when the shopper picks one, but not for the card it selects at load.
+		$token_id = (string) ( $data[ 'wc-' . $this->id . '-payment-token' ] ?? '' );
+		if ( ( '' === $token_id || 'new' === $token_id ) && ! empty( $data['issavedtoken'] ) ) {
+			$token_id = (string) ( $data['token'] ?? '' );
+		}
+		if ( '' !== $token_id && 'new' !== $token_id ) {
+			$token = WC_Payment_Tokens::get( absint( $token_id ) );
+			// Token IDs are sequential: anyone can post another customer's.
+			if ( ! $token || get_current_user_id() <= 0 || $token->get_user_id() !== get_current_user_id()
+				|| $token->get_gateway_id() !== $this->id ) {
+				return $this->return_error(
+					$order,
+					__( 'That saved card can\'t be used. Please choose another payment method.', 'payfurl-extension-for-woocommerce' ),
+					'saved card ' . absint( $token_id ) . ' is not the customer\'s'
+				);
+			}
 
-        if ($data['wc-payfurl_card-new-payment-method']) {
-            $res = WC_Payfurl_SDK::get_instance()->create_payment_method($data['payfurl_token']);
-            if ($res['errorMessage']) {
-                return $this->return_error($order, $res['errorMessage']);
-            }
+			$request['paymentMethodId'] = $token->get_token();
+			return $this->finish_payment( $order, WC_Payfurl_SDK::get_instance()->charge_by_payment_method( $request ) );
+		}
 
-            if ($res['paymentMethodId']) {
-//                $token = new WC_Payment_Token_Payfurl();
-//                $token->set_gateway_id($this->id);
-//                $token->set_token($res['paymentMethodId']);
-//                $token->set_user_id(get_current_user_id());
-//                $token->set_token_type($res['type']);
-//                $token->set_bin($res['card']['cardIin']);
-//                $token->set_last4(substr($res['card']['cardNumber'], -4));
-//                $token->set_card_type($res['card']['type']);
-//                $token->set_cardholder($res['card']['cardholder']);
-//                $parts = explode('/', $res['card']['expiryDate']);
-//                $token->set_expiry_year($parts[1]);
-//                $token->set_expiry_month($parts[0]);
-//                $token->save();
+		$card_token = (string) ( $data['payfurl_token'] ?? '' );
+		if ( '' === $card_token ) {
+			return $this->return_error( $order, __( 'Please enter your card details.', 'payfurl-extension-for-woocommerce' ), 'no card token' );
+		}
 
-                $tokenCC = new WC_Payment_Token_CC();
-                $tokenCC->set_gateway_id($this->id);
-                $tokenCC->set_token($res['paymentMethodId']);
-                $tokenCC->set_user_id(get_current_user_id());
-                $tokenCC->set_last4(substr($res['card']['cardNumber'], -4));
-                $tokenCC->set_card_type($res['card']['type']);
-                $parts = explode('/', $res['card']['expiryDate']);
-                $tokenCC->set_expiry_year('20' . $parts[1]);
-                $tokenCC->set_expiry_month($parts[0]);
-                $tokenCC->save();
-            }
+		if ( ! empty( $data['wc-payfurl_card-new-payment-method'] ) && get_current_user_id() > 0 ) {
+			$method = WC_Payfurl_SDK::get_instance()->create_payment_method( $card_token );
+			if ( ! empty( $method['errorMessage'] ) ) {
+				return $this->return_error( $order, $method['errorMessage'] );
+			}
+			$this->save_card( $method );
 
-            $res = WC_Payfurl_SDK::get_instance()->charge_by_payment_method(array_merge([
-                                                                       'paymentMethodId' => $res['paymentMethodId'],
-                                                                   ], $payment_details));
-            if ($res['errorMessage']) {
-                return $this->return_error($order, $res['errorMessage']);
-            }
-        }
-        else {
+			$request['paymentMethodId'] = $method['paymentMethodId'];
+			return $this->finish_payment( $order, WC_Payfurl_SDK::get_instance()->charge_by_payment_method( $request ) );
+		}
 
-            $res = WC_Payfurl_SDK::get_instance()->charge_by_token(array_merge([
-                                                                       'token' => $data['payfurl_token'],
-                                                                   ], $payment_details));
-            if ($res['errorMessage']) {
-                return $this->return_error($order, $res['errorMessage']);
-            }
-        }
+		$request['token'] = $card_token;
+		return $this->finish_payment( $order, WC_Payfurl_SDK::get_instance()->charge_by_token( $request ) );
+	}
 
-        return $this->finish_payment($order, $res['chargeId']);
-    }
+	/**
+	 * Saves a payFURL payment method as the customer's card.
+	 *
+	 * @param array $method The payment method.
+	 */
+	private function save_card( array $method ) {
+		$card   = (array) ( $method['card'] ?? array() );
+		$expiry = explode( '/', (string) ( $card['expiryDate'] ?? '' ) );
 
-    public function process_refund($order_id, $amount = null, $reason = '')
-    {
-        return false;
-    }
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( $this->id );
+		$token->set_token( $method['paymentMethodId'] );
+		$token->set_user_id( get_current_user_id() );
+		$token->set_last4( substr( (string) ( $card['cardNumber'] ?? '' ), -4 ) );
+		$token->set_card_type( strtolower( (string) ( $card['type'] ?? '' ) ) );
+		$token->set_expiry_month( $expiry[0] ?? '' );
+		$token->set_expiry_year( isset( $expiry[1] ) ? '20' . $expiry[1] : '' );
+		$token->save();
+	}
 }

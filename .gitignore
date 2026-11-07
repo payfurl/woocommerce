@@ -1,0 +1,10 @@
+# Built: `just build` (npm run build, composer install). The release zip has them (`just zip`).
+/build/
+/vendor/
+/node_modules/
+/*.zip
+/dist/
+
+.phpunit.result.cache
+.idea/
+.DS_Store
