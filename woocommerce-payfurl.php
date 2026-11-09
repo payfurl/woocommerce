@@ -1,92 +1,119 @@
 <?php
 /**
- * Plugin Name:         PayFURL Extension for WooCommerce
- * Plugin URI:          https://github.com/payfurl/woocommerce
- * Description:         PayFURL payment extension for WooCommerce.
- * Version:             1.0.0
- * Author:              PayFURL
- * Author URI:          https://payfurl.com/
- * Requires Plugins:    woocommerce
- * License:             GPL-3.0-or-later
- * License URI:         https://www.gnu.org/licenses/gpl-3.0.html
+ * Plugin Name:          PayFURL Extension for WooCommerce
+ * Plugin URI:           https://github.com/payfurl/woocommerce
+ * Description:          Take payments in WooCommerce's checkout through payFURL: cards with Click to Pay, PayPal, Google Pay, Apple Pay, PayTo, PayID and more, routed to your payment gateways.
+ * Version:              2.0.0
+ * Author:               PayFURL
+ * Author URI:           https://payfurl.com/
+ * Text Domain:          payfurl-extension-for-woocommerce
+ * Requires at least:    6.7
+ * Requires PHP:         8.1
+ * Requires Plugins:     woocommerce
+ * WC requires at least: 9.6
+ * WC tested up to:      11.2
+ * License:              GPL-3.0-or-later
+ * License URI:          https://www.gnu.org/licenses/gpl-3.0.html
  *
- * @package         create-block
+ * @package PayfurlExtensionForWooCommerce
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit;
+defined( 'ABSPATH' ) || exit;
 
-$loader = require_once(__DIR__ . '/vendor/autoload.php');
-$loader->addPsr4('payFURL\\', __DIR__ . '/vendor/payfurl/sdk/src');
+define( 'PAYFURL_VERSION', '2.0.0' );
+define( 'PAYFURL_PLUGIN_FILE', __FILE__ );
+// The browser SDK, a production release: .github/workflows/sdk-bump.yml updates it. payFURL's e2e store points
+// the `payfurl_sdk_url` filter at the SDK built from source.
+define( 'PAYFURL_SDK_URL', 'https://assets.payfurl.com/v4.10.0/js/payfurl.js' );
 
-add_action('before_woocommerce_init', function () {
-    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
-    }
-});
+require_once __DIR__ . '/vendor/autoload.php';
 
-add_action('woocommerce_blocks_loaded', function () {
-    require_once __DIR__ . '/includes/payfurl-blocks-integration.php';
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
+		}
+	}
+);
 
-    add_action(
-        'woocommerce_blocks_payment_method_type_registration',
-        function ($integration_registry) {
-            $integration_registry->register(new Payfurl_Blocks_Integration());
-        }
-    );
-});
+add_action(
+	'plugins_loaded',
+	function () {
+		if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
+			return;
+		}
+		require_once __DIR__ . '/includes/class-payfurl-sdk.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-card.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-checkout.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-paypal.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-payto.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-googlepay.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-applepay.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-shift.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-optty.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-pesapal.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-paybyaccount.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-payid.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-payglocal.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-upi.php';
+		require_once __DIR__ . '/includes/class-wc-payfurl-webhook.php';
+	}
+);
 
+add_filter(
+	'woocommerce_payment_gateways',
+	function ( $gateways ) {
+		// The settings gateway (never offered at checkout) and the payment methods, everywhere: WooCommerce's
+		// Payments settings are built in a REST request, and the admin finds an order's gateway to refund it.
+		return array_merge( $gateways, array( WC_Payfurl::class ), WC_Payfurl::PAYMENT_METHODS );
+	}
+);
 
-add_filter('woocommerce_payment_gateways', function ($gateways) {
-    if (is_admin()) {
-        $gateways[] = WC_Payfurl::class;
-    }
-    else {
-        $gateways[] = WC_Payfurl_Card::class;
-        $gateways[] = WC_Payfurl_Paypal::class;
-        $gateways[] = WC_Payfurl_Checkout::class;
-        $gateways[] = WC_Payfurl_PayTo::class;
-        $gateways[] = WC_Payfurl_GooglePay::class;
-        $gateways[] = WC_Payfurl_ApplePay::class;
-        $gateways[] = WC_Payfurl_Shift::class;
-        $gateways[] = WC_Payfurl_Optty::class;
-        $gateways[] = WC_Payfurl_Pesapal::class;
-        $gateways[] = WC_Payfurl_PayByAccount::class;
-        $gateways[] = WC_Payfurl_PayId::class;
-        $gateways[] = WC_Payfurl_PayGLocal::class;
-        $gateways[] = WC_Payfurl_Upi::class;
-    }
-    return $gateways;
-});
+add_action(
+	'woocommerce_blocks_loaded',
+	function () {
+		require_once __DIR__ . '/includes/payfurl-blocks-integration.php';
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function ( $registry ) {
+				$registry->register( new Payfurl_Blocks_Integration() );
+			}
+		);
+	}
+);
 
-add_action('plugins_loaded', function () {
-    require_once __DIR__ . '/includes/class-payfurl-sdk.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-card.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-checkout.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-paypal.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-payto.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-googlepay.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-applepay.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-shift.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-optty.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-pesapal.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-paybyaccount.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-payid.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-payglocal.php';
-    require_once __DIR__ . '/includes/class-wc-payfurl-upi.php';
-    require_once __DIR__ . '/includes/class-wc-payment-token-payfurl.php';
-});
+add_action( 'woocommerce_api_payfurl', array( 'WC_Payfurl_Webhook', 'handle' ) );
 
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), function (array $links) {
-    $settings_url_params = [
-        'page' => 'wc-settings',
-        'tab' => 'checkout',
-        'section' => 'payfurl',
-    ];
+// "Check the payFURL payment" on an order on hold: the webhook's update, run by hand.
+add_filter(
+	'woocommerce_order_actions',
+	function ( $actions, $order = null ) {
+		if ( $order instanceof WC_Order && $order->has_status( 'on-hold' ) && $order->get_meta( WC_Payfurl::META_CHARGE_ID ) ) {
+			$actions['payfurl_check_payment'] = __( 'Check the payFURL payment', 'payfurl-extension-for-woocommerce' );
+		}
+		return $actions;
+	},
+	10,
+	2
+);
+add_action(
+	'woocommerce_order_action_payfurl_check_payment',
+	function ( $order ) {
+		$gateway = wc_get_payment_gateway_by_order( $order );
+		if ( $gateway instanceof WC_Payfurl && 'error' === $gateway->update_from_charge( $order ) ) {
+			$order->add_order_note( __( 'The payFURL charge could not be fetched: see WooCommerce > Status > Logs (payfurl).', 'payfurl-extension-for-woocommerce' ) );
+		}
+	}
+);
 
-    $plugin_links = [
-        '<a href="' . esc_attr(admin_url(add_query_arg($settings_url_params, 'admin.php'))) . '">' . 'Settings' . '</a>',
-    ];
-
-    return array_merge($plugin_links, $links);
-});
+add_filter(
+	'plugin_action_links_' . plugin_basename( __FILE__ ),
+	function ( array $links ) {
+		$url = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=payfurl' );
+		array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Settings', 'payfurl-extension-for-woocommerce' ) . '</a>' );
+		return $links;
+	}
+);

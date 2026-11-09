@@ -1,12 +1,29 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
+/**
+ * Apple Pay payments.
+ *
+ * @package PayfurlExtensionForWooCommerce
+ */
 
-class WC_Payfurl_ApplePay extends WC_Payfurl_Checkout
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->id = 'payfurl_applepay';
-        $this->method_title = 'Payfurl ApplePay';
-    }
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Apple Pay. The browser SDK creates the charge; WC_Payfurl_Checkout checks it.
+ */
+class WC_Payfurl_ApplePay extends WC_Payfurl_Checkout {
+
+	/**
+	 * Gateway ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'payfurl_applepay';
+
+	/**
+	 * Set up the gateway.
+	 */
+	public function __construct() {
+		parent::__construct();
+		$this->title = __( 'Apple Pay', 'payfurl-extension-for-woocommerce' );
+	}
 }

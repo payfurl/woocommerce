@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Runs inside wp-env's tests-cli container: `just test-php` (WordPress, WooCommerce and this plugin). -->
+<phpunit
+	bootstrap="tests/php/bootstrap.php"
+	colors="true"
+	beStrictAboutTestsThatDoNotTestAnything="true"
+	convertDeprecationsToExceptions="true"
+>
+	<testsuites>
+		<testsuite name="payfurl">
+			<directory suffix="Test.php">tests/php</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>

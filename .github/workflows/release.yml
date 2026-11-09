@@ -1,0 +1,80 @@
+# Pushing a vX.Y.Z tag releases that version: the tag must match the plugin header's Version, readme.txt's Stable
+# tag and package.json's version. The workflow builds the plugin, deploys it to WordPress.org's SVN (trunk and
+# tags/X.Y.Z, without what .distignore lists), and creates the GitHub release with the version's CHANGELOG.md
+# section as notes and the plugin zip attached.
+# Secrets: SVN_USERNAME and SVN_PASSWORD, a committer of the payfurl-extension-for-woocommerce plugin on
+# WordPress.org (the account in readme.txt's Contributors).
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: The tag matches the plugin's version
+        id: version
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          header=$(sed -nE 's/^ \* Version: +([0-9.]+)$/\1/p' woocommerce-payfurl.php)
+          constant=$(sed -nE "s/^define\( 'PAYFURL_VERSION', '([0-9.]+)' \);$/\1/p" woocommerce-payfurl.php)
+          stable=$(sed -nE 's/^Stable tag: ([0-9.]+)$/\1/p' readme.txt)
+          package=$(jq -r .version package.json)
+          for found in "$header" "$constant" "$stable" "$package"; do
+            if [ "$found" != "$version" ]; then
+              echo "::error::tag $GITHUB_REF_NAME, but Version: $header, PAYFURL_VERSION $constant, Stable tag: $stable, package.json $package"
+              exit 1
+            fi
+          done
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # The lines between "## [VERSION]" and the next "## " heading.
+          awk -v heading="## [$VERSION]" 'index($0, "## ") == 1 { found = (index($0, heading) == 1); next } found' \
+            CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::CHANGELOG.md has no \"## [$VERSION]\" section"
+            exit 1
+          fi
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Build
+        run: |
+          npm ci --no-audit --no-fund && npm run build
+          composer install --no-dev --no-interaction --no-progress --optimize-autoloader
+
+      - name: Deploy to WordPress.org
+        id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        with:
+          generate-zip: true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: payfurl-extension-for-woocommerce
+          VERSION: ${{ steps.version.outputs.version }}
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md \
+            "${{ steps.deploy.outputs.zip-path }}"

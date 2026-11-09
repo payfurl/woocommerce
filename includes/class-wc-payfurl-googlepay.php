@@ -1,12 +1,29 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
+/**
+ * Google Pay payments.
+ *
+ * @package PayfurlExtensionForWooCommerce
+ */
 
-class WC_Payfurl_GooglePay extends WC_Payfurl_Checkout
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->id = 'payfurl_googlepay';
-        $this->method_title = 'Payfurl GooglePay';
-    }
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Google Pay. The browser SDK creates the charge; WC_Payfurl_Checkout checks it.
+ */
+class WC_Payfurl_GooglePay extends WC_Payfurl_Checkout {
+
+	/**
+	 * Gateway ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'payfurl_googlepay';
+
+	/**
+	 * Set up the gateway.
+	 */
+	public function __construct() {
+		parent::__construct();
+		$this->title = __( 'Google Pay', 'payfurl-extension-for-woocommerce' );
+	}
 }

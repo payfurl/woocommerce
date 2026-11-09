@@ -1,12 +1,29 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
+/**
+ * PayPal payments.
+ *
+ * @package PayfurlExtensionForWooCommerce
+ */
 
-class WC_Payfurl_Paypal extends WC_Payfurl_Checkout
-{
-    public function __construct()
-    {
-        parent::__construct();
-        $this->id = 'payfurl_paypal';
-        $this->method_title = 'Payfurl PayPal';
-    }
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * PayPal. The browser SDK creates the charge; WC_Payfurl_Checkout checks it.
+ */
+class WC_Payfurl_Paypal extends WC_Payfurl_Checkout {
+
+	/**
+	 * Gateway ID.
+	 *
+	 * @var string
+	 */
+	public $id = 'payfurl_paypal';
+
+	/**
+	 * Set up the gateway.
+	 */
+	public function __construct() {
+		parent::__construct();
+		$this->title = __( 'PayPal', 'payfurl-extension-for-woocommerce' );
+	}
 }
