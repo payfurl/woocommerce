@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="payFURL for WooCommerce">
-	<description>WordPress and WooCommerce coding standards, PHP 8.1 and later.</description>
+	<description>WordPress and WooCommerce coding standards, PHP 8.2 and later.</description>
 
 	<file>woocommerce-payfurl.php</file>
 	<file>includes</file>
@@ -9,7 +9,7 @@
 	<arg value="s"/>
 	<arg name="colors"/>
 
-	<config name="testVersion" value="8.1-"/>
+	<config name="testVersion" value="8.2-"/>
 	<config name="minimum_wp_version" value="6.7"/>
 
 	<rule ref="WordPress"/>

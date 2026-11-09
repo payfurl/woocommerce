@@ -8,7 +8,7 @@
  * Author URI:           https://payfurl.com/
  * Text Domain:          payfurl-extension-for-woocommerce
  * Requires at least:    6.7
- * Requires PHP:         8.1
+ * Requires PHP:         8.2
  * Requires Plugins:     woocommerce
  * WC requires at least: 9.6
  * WC tested up to:      11.2
