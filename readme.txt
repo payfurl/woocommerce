@@ -3,7 +3,7 @@ Contributors: davidatpayfurldotcom
 Tags: woocommerce, payments, payment gateway, paypal, payto
 Requires at least: 6.7
 Tested up to: 7.1
-Requires PHP: 8.1
+Requires PHP: 8.2
 Stable tag: 2.0.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -28,7 +28,7 @@ Refunds, full or partial, are made from the order in the WordPress admin and sen
 
 = Requirements =
 
-* WordPress 6.7 or later, PHP 8.1 or later.
+* WordPress 6.7 or later, PHP 8.2 or later.
 * WooCommerce 9.6 or later, with the **Checkout block** on the checkout page (WooCommerce's default since 8.3). The payment methods are not offered on the classic (shortcode) checkout, the "pay for order" page or My Account's "Add payment method".
 * A payFURL account with at least one payment gateway connected: [app.payfurl.com](https://app.payfurl.com/).
 
@@ -84,12 +84,13 @@ payFURL's [privacy policy](https://payfurl.com/privacy-policy/). Your use of pay
 
 = 2.0.0 - 2026-11-07 =
 
-**Breaking:** requires WordPress 6.7, WooCommerce 9.6 and PHP 8.1 or later. The payment methods are offered on the Checkout block only.
+**Breaking:** requires WordPress 6.7, WooCommerce 9.6 and PHP 8.2 or later. The payment methods are offered on the Checkout block only.
 
 * Every payment is confirmed with payFURL before the order is marked paid. Before, an order was marked paid for any payment ID the browser sent, including a failed one or another order's.
 * Pending payments (PayID, PayTo) put the order On hold until a payFURL webhook or the new **Check the payFURL payment** order action settles it. New **Webhook signing key** setting.
 * Refunds from the admin, for orders paid with any payFURL method, 1.0 orders included.
 * A saved card can only be used by the customer who saved it.
+* Ships the payFURL PHP SDK 3.
 * High-Performance Order Storage (HPOS) compatible.
 * PayPal, Google Pay, Apple Pay and the checkout methods charge the cart's current total, and submit the checkout themselves.
 * Each payment method's own name on orders and emails (1.0 showed the card's title for all).
@@ -106,4 +107,4 @@ payFURL's [privacy policy](https://payfurl.com/privacy-policy/). Your use of pay
 
 = 2.0.0 =
 
-Every payment is now confirmed with payFURL on your server. Requires WordPress 6.7, WooCommerce 9.6, PHP 8.1 and the Checkout block. Your settings, saved cards and orders carry over. For PayID and PayTo, add the webhook (see Installation).
+Every payment is now confirmed with payFURL on your server. Requires WordPress 6.7, WooCommerce 9.6, PHP 8.2 and the Checkout block. Your settings, saved cards and orders carry over. For PayID and PayTo, add the webhook (see Installation).

@@ -12,8 +12,13 @@ notes; `readme.txt`'s `== Changelog ==` is WordPress.org's shorter copy.
 
 ### Changed
 
-- **Breaking:** requires WordPress 6.7, WooCommerce 9.6 and PHP 8.1 or later (WooCommerce 11.6 requires PHP 8.1).
-  Update them first, then the plugin.
+- **Breaking:** requires WordPress 6.7, WooCommerce 9.6 and PHP 8.2 or later (the payFURL PHP SDK 3 it ships with
+  requires PHP 8.2). Update them first, then the plugin. WordPress.org doesn't offer this version to a site on an
+  older PHP, which keeps 1.x.
+- Ships the payFURL PHP SDK 3 (`payfurl/phpsdk`), with an SDK client built from the settings instead of global
+  settings set on every call.
+- The checkout's payment methods list PayPal for the browser SDK the checkout loads: the plugin tells payFURL that
+  version, where SDK 2 sent a fixed `4.5.7`.
 - **Breaking:** the payment methods are offered on the Checkout block only, WooCommerce's default checkout since
   8.3. They are no longer listed on the classic (shortcode) checkout, the "pay for order" page or My Account's "Add
   payment method", where their forms never showed.

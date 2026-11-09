@@ -7,7 +7,7 @@ payFURL support instead, with the plugin's log (turn **Debug** on, then **WooCom
 
 ## Running the checks
 
-You need PHP 8.1 or later, [Composer](https://getcomposer.org/), Node.js 24, Docker and [just](https://just.systems/).
+You need PHP 8.2 or later, [Composer](https://getcomposer.org/), Node.js 24, Docker and [just](https://just.systems/).
 
 ```bash
 just build   # npm and Composer: build/ (the checkout's JS) and vendor/
@@ -20,7 +20,7 @@ tests (`src/js/test`) run with Vitest. `just plugin-check` runs WordPress.org's
 [Plugin Check](https://wordpress.org/plugins/plugin-check/) on the release build, and `just zip` makes the release
 zip.
 
-GitHub Actions run the static checks, the JS tests, the PHP tests on PHP 8.1 to 8.4, and Plugin Check on every pull
+GitHub Actions run the static checks, the JS tests, the PHP tests on PHP 8.2 to 8.5, and Plugin Check on every pull
 request (`.github/workflows/ci.yml`).
 
 ## Pull requests
