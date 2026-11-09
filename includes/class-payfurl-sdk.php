@@ -96,7 +96,7 @@ class WC_Payfurl_SDK {
 	public function get_providers_info( $amount, $currency ) {
 		return $this->call(
 			'providers',
-			fn() => $this->client()->info()->providers(
+			fn() => $this->client()->info->providers(
 				is_numeric( $amount ) ? (float) $amount : null,
 				'' === (string) $currency ? null : (string) $currency,
 				self::browser_sdk_version()
@@ -113,7 +113,7 @@ class WC_Payfurl_SDK {
 	public function charge_by_token( $data ) {
 		return $this->call(
 			'charge token',
-			fn() => $this->client()->charges()->createWithToken(
+			fn() => $this->client()->charges->createWithToken(
 				new NewChargeToken( ...self::charge( $data ), token: (string) $data['token'] )
 			)->toArray()
 		);
@@ -128,7 +128,7 @@ class WC_Payfurl_SDK {
 	public function charge_by_payment_method( $data ) {
 		return $this->call(
 			'charge payment method',
-			fn() => $this->client()->charges()->createWithPaymentMethod(
+			fn() => $this->client()->charges->createWithPaymentMethod(
 				new NewChargePaymentMethod( ...self::charge( $data ), paymentMethodId: (string) $data['paymentMethodId'] )
 			)->toArray()
 		);
@@ -143,7 +143,7 @@ class WC_Payfurl_SDK {
 	public function create_payment_method( $token ) {
 		return $this->call(
 			'create payment method',
-			fn() => $this->client()->paymentMethods()->createWithToken( new NewPaymentMethodToken( token: (string) $token ) )->toArray()
+			fn() => $this->client()->paymentMethods->createWithToken( new NewPaymentMethodToken( token: (string) $token ) )->toArray()
 		);
 	}
 
@@ -154,7 +154,7 @@ class WC_Payfurl_SDK {
 	 * @return array
 	 */
 	public function get_charge( string $charge_id ) {
-		return $this->call( 'get charge', fn() => $this->client()->charges()->get( $charge_id )->toArray() );
+		return $this->call( 'get charge', fn() => $this->client()->charges->get( $charge_id )->toArray() );
 	}
 
 	/**
@@ -168,7 +168,7 @@ class WC_Payfurl_SDK {
 	public function refund( string $charge_id, float $amount, string $comment ) {
 		return $this->call(
 			'refund',
-			fn() => $this->client()->charges()->refund( $charge_id, $amount > 0 ? $amount : null, '' === $comment ? null : $comment )->toArray()
+			fn() => $this->client()->charges->refund( $charge_id, $amount > 0 ? $amount : null, '' === $comment ? null : $comment )->toArray()
 		);
 	}
 
