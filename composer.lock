@@ -4,45 +4,56 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "19d1d61c246ee7be6351c3f955cc6cb2",
+    "content-hash": "2905f9e3a46bd91a6ef38116cf6c90c4",
     "packages": [
         {
             "name": "payfurl/phpsdk",
-            "version": "v2.2.3",
+            "version": "v3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/payfurl/phpsdk.git",
-                "reference": "9af44ff8e14f344becbd4417820399411da8c0e5"
+                "reference": "ebe0c829daa3b045b9597a9369af2619a0f5b582"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/payfurl/phpsdk/zipball/9af44ff8e14f344becbd4417820399411da8c0e5",
-                "reference": "9af44ff8e14f344becbd4417820399411da8c0e5",
+                "url": "https://api.github.com/repos/payfurl/phpsdk/zipball/ebe0c829daa3b045b9597a9369af2619a0f5b582",
+                "reference": "ebe0c829daa3b045b9597a9369af2619a0f5b582",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "php": ">=7.4"
+                "ext-json": "*",
+                "php": "^8.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.5"
+                "friendsofphp/php-cs-fixer": "^3.64",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.5"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "payFURL\\Sdk\\": "src"
+                    "payFURL\\Sdk\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
-            "description": "php SDK to provide a friendly interface to the payFURL API",
+            "description": "The payFURL API for PHP: charges, customers, payment methods, subscriptions and the rest of the public REST API",
+            "homepage": "https://github.com/payfurl/phpsdk",
+            "keywords": [
+                "payfurl",
+                "payment orchestration",
+                "payments",
+                "sdk"
+            ],
             "support": {
+                "docs": "https://docs.payfurl.com",
                 "issues": "https://github.com/payfurl/phpsdk/issues",
-                "source": "https://github.com/payfurl/phpsdk/tree/v2.2.3"
+                "source": "https://github.com/payfurl/phpsdk"
             },
-            "time": "2025-08-05T09:02:37+00:00"
+            "time": "2026-11-09T06:07:18+00:00"
         }
     ],
     "packages-dev": [
@@ -2835,11 +2846,11 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.1"
+        "php": ">=8.2"
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.1.0"
+        "php": "8.2.0"
     },
     "plugin-api-version": "2.6.0"
 }
