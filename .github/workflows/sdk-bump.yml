@@ -13,11 +13,11 @@
 # A version is skipped once a PR for its branch exists (open, merged or closed). A run that pushed the branch but
 # failed to open the PR is retried the next night: the branch is force-pushed again from main.
 #
-# Each PR's body asks for the e2e run in payfurl/platform before merging. Two PRs open the same day bump to the same
-# patch version: merge one, and the other's conflict shows which to rebase.
-#
-# A PR opened with the default GITHUB_TOKEN does not start other workflows, so CI would not run on it: set the
-# SDK_BUMP_TOKEN secret (a fine-grained token with contents and pull-requests write on this repository) for that.
+# A minor or patch PR merges itself once CI passes (gh pr merge --auto), and release.yml then releases the new version
+# from main. That needs a ruleset requiring status checks on main (without one the PR is left to a person) and the
+# SDK_BUMP_TOKEN secret, a fine-grained token with contents and pull-requests write on this repository: GitHub runs
+# no CI on a PR opened with the default token, and starts no release.yml for a merge made with it. The e2e suite in
+# payfurl/platform is not part of CI: its store loads the browser SDK built from source, not the pinned release.
 name: SDK bump
 
 on:
@@ -92,7 +92,21 @@ jobs:
           gh pr create --base main --head "$BRANCH" --title "Browser SDK v$LATEST (plugin $next)" --body \
             "Pins the browser SDK released to production as @payfurl/client v$LATEST ([changelog](https://docs.payfurl.com/client_sdk/changelog)) and bumps the plugin to $next.
 
-          Before merging, run the e2e suite against this branch from a payfurl/platform checkout: \`just build\` here, then \`WOOCOMMERCE_PLUGIN_DIR=<this checkout> just e2e woocommerce\` there. After merging, tag \`v$next\` to release it to WordPress.org."
+          It merges itself once CI passes, and the merge releases v$next to WordPress.org (release.yml)."
+
+      - name: Merge it once CI passes
+        if: steps.sdk.outputs.latest
+        env:
+          GH_TOKEN: ${{ secrets.SDK_BUMP_TOKEN || github.token }}
+          BRANCH: ${{ steps.sdk.outputs.branch }}
+        run: |
+          # Without required checks, --auto would merge at once: leave the PR to a person.
+          checks=$(gh api "repos/$GITHUB_REPOSITORY/rules/branches/main" --jq '[.[] | select(.type == "required_status_checks")] | length')
+          if [ "$checks" = 0 ]; then
+            echo "::warning::main requires no checks: merge the PR by hand"
+            exit 0
+          fi
+          gh pr merge "$BRANCH" --auto --merge
 
   php-sdk:
     runs-on: ubuntu-latest
@@ -184,4 +198,18 @@ jobs:
           gh pr create --base main --head "$BRANCH" --title "payfurl/phpsdk v$LATEST (plugin $next)" --body \
             "Ships payfurl/phpsdk $LATEST ([changelog]($sdk_changelog)), the release now on Packagist, in place of $REQUIRED, and bumps the plugin to $next. The SDK is vendored in the plugin's zip, so stores get it with this release.
 
-          $e2e After merging, tag \`v$next\` to release it to WordPress.org."
+          It merges itself once CI passes, and the merge releases v$next to WordPress.org (release.yml). To check it first, turn off auto-merge on this PR. $e2e"
+
+      - name: Merge it once CI passes
+        if: steps.sdk.outputs.latest && steps.sdk.outputs.major == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.SDK_BUMP_TOKEN || github.token }}
+          BRANCH: ${{ steps.sdk.outputs.branch }}
+        run: |
+          # Without required checks, --auto would merge at once: leave the PR to a person.
+          checks=$(gh api "repos/$GITHUB_REPOSITORY/rules/branches/main" --jq '[.[] | select(.type == "required_status_checks")] | length')
+          if [ "$checks" = 0 ]; then
+            echo "::warning::main requires no checks: merge the PR by hand"
+            exit 0
+          fi
+          gh pr merge "$BRANCH" --auto --merge

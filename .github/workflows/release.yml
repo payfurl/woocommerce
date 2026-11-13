@@ -1,17 +1,23 @@
-# Pushing a vX.Y.Z tag releases that version: the tag must match the plugin header's Version, readme.txt's Stable
-# tag and package.json's version. The workflow builds the plugin, deploys it to WordPress.org's SVN (trunk and
-# tags/X.Y.Z, without what .distignore lists), and creates the GitHub release with the version's CHANGELOG.md
-# section as notes and the plugin zip attached.
+# Releases the plugin's version once: on every push to main (a merged pull request that bumps the version, such as
+# sdk-bump.yml's, releases itself) and on a pushed vX.Y.Z tag. A version that already has a GitHub release is
+# skipped. The header's Version, PAYFURL_VERSION, readme.txt's Stable tag and package.json's version must agree (and
+# match the tag). The workflow builds the plugin, deploys it to WordPress.org's SVN (trunk and tags/X.Y.Z, without
+# what .distignore lists), and creates the GitHub release (and its vX.Y.Z tag, on the pushed commit) with the
+# version's CHANGELOG.md section as notes and the plugin zip attached. A failed run is retried by re-running it.
 # Secrets: SVN_USERNAME and SVN_PASSWORD, a committer of the payfurl-extension-for-woocommerce plugin on
 # WordPress.org (the account in readme.txt's Contributors).
 name: Release
 
 on:
   push:
+    branches: [main]
     tags: ['v*.*.*']
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
 
 jobs:
   release:
@@ -19,23 +25,31 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: The tag matches the plugin's version
+      - name: The version, unless it is released
         id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          version=${GITHUB_REF_NAME#v}
           header=$(sed -nE 's/^ \* Version: +([0-9.]+)$/\1/p' woocommerce-payfurl.php)
           constant=$(sed -nE "s/^define\( 'PAYFURL_VERSION', '([0-9.]+)' \);$/\1/p" woocommerce-payfurl.php)
           stable=$(sed -nE 's/^Stable tag: ([0-9.]+)$/\1/p' readme.txt)
           package=$(jq -r .version package.json)
+          version=$header
+          [ "$GITHUB_REF_TYPE" = tag ] && version=${GITHUB_REF_NAME#v}
           for found in "$header" "$constant" "$stable" "$package"; do
             if [ "$found" != "$version" ]; then
-              echo "::error::tag $GITHUB_REF_NAME, but Version: $header, PAYFURL_VERSION $constant, Stable tag: $stable, package.json $package"
+              echo "::error::$GITHUB_REF_NAME: Version: $header, PAYFURL_VERSION $constant, Stable tag: $stable, package.json $package"
               exit 1
             fi
           done
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version is released"
+            exit 0
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Release notes from CHANGELOG.md
+        if: steps.version.outputs.version
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
@@ -48,20 +62,24 @@ jobs:
           fi
 
       - uses: shivammathur/setup-php@v2
+        if: steps.version.outputs.version
         with:
           php-version: '8.2'
           tools: composer:v2
           coverage: none
       - uses: actions/setup-node@v7
+        if: steps.version.outputs.version
         with:
           node-version: 24
           cache: npm
       - name: Build
+        if: steps.version.outputs.version
         run: |
           npm ci --no-audit --no-fund && npm run build
           composer install --no-dev --no-interaction --no-progress --optimize-autoloader
 
       - name: Deploy to WordPress.org
+        if: steps.version.outputs.version
         id: deploy
         uses: 10up/action-wordpress-plugin-deploy@2.3.0
         with:
@@ -73,8 +91,10 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
 
       - name: GitHub release
+        if: steps.version.outputs.version
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md \
+          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --notes-file notes.md \
             "${{ steps.deploy.outputs.zip-path }}"
