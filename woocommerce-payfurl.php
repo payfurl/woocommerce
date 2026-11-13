@@ -3,7 +3,7 @@
  * Plugin Name:          PayFURL Extension for WooCommerce
  * Plugin URI:           https://github.com/payfurl/woocommerce
  * Description:          Take payments in WooCommerce's checkout through payFURL: cards with Click to Pay, PayPal, Google Pay, Apple Pay, PayTo, PayID and more, routed to your payment gateways.
- * Version:              2.0.1
+ * Version:              2.0.2
  * Author:               PayFURL
  * Author URI:           https://payfurl.com/
  * Text Domain:          payfurl-extension-for-woocommerce
@@ -20,11 +20,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PAYFURL_VERSION', '2.0.1' );
+define( 'PAYFURL_VERSION', '2.0.2' );
 define( 'PAYFURL_PLUGIN_FILE', __FILE__ );
 // The browser SDK, a production release: .github/workflows/sdk-bump.yml updates it. payFURL's e2e store points
 // the `payfurl_sdk_url` filter at the SDK built from source.
-define( 'PAYFURL_SDK_URL', 'https://assets.payfurl.com/v4.11.0/js/payfurl.js' );
+define( 'PAYFURL_SDK_URL', 'https://assets.payfurl.com/v4.11.1/js/payfurl.js' );
 
 require_once __DIR__ . '/vendor/autoload.php';
 
