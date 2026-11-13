@@ -10,6 +10,9 @@
 # updates composer.lock, bumps the patch version and adds the changelog entries. A new major is not compatible: its
 # PR is a draft that only changes the constraint and the lock, to start the migration from.
 #
+# A version is skipped once a PR for its branch exists (open, merged or closed). A run that pushed the branch but
+# failed to open the PR is retried the next night: the branch is force-pushed again from main.
+#
 # Each PR's body asks for the e2e run in payfurl/platform before merging. Two PRs open the same day bump to the same
 # patch version: merge one, and the other's conflict shows which to rebase.
 #
@@ -47,7 +50,8 @@ jobs:
           pinned=$(sed -nE 's#.*assets\.payfurl\.com/v([0-9.]+)/js/payfurl\.js.*#\1#p' woocommerce-payfurl.php)
           echo "pinned v$pinned, npm v$latest"
           branch="sdk-bump/v$latest"
-          if [ "$latest" = "$pinned" ] || git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+          prs=$(gh pr list --head "$branch" --state all --json number --jq length)
+          if [ "$latest" = "$pinned" ] || [ "$prs" != 0 ]; then
             echo "nothing to do"
             exit 0
           fi
@@ -84,7 +88,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git switch -c "$BRANCH"
           git commit -am "Browser SDK v$LATEST (plugin $next)"
-          git push origin "$BRANCH"
+          git push --force origin "$BRANCH"
           gh pr create --base main --head "$BRANCH" --title "Browser SDK v$LATEST (plugin $next)" --body \
             "Pins the browser SDK released to production as @payfurl/client v$LATEST ([changelog](https://docs.payfurl.com/client_sdk/changelog)) and bumps the plugin to $next.
 
@@ -99,6 +103,8 @@ jobs:
 
       - name: Compare the required SDK with Packagist
         id: sdk
+        env:
+          GH_TOKEN: ${{ secrets.SDK_BUMP_TOKEN || github.token }}
         run: |
           latest=$(curl -fsS https://repo.packagist.org/p2/payfurl/phpsdk.json \
             | jq -r '.packages["payfurl/phpsdk"][].version' | sed 's/^v//' \
@@ -116,8 +122,9 @@ jobs:
           required="$major${BASH_REMATCH[2]:-.0}${BASH_REMATCH[3]:-.0}"
           echo "required $required ($constraint), Packagist $latest"
           branch="phpsdk-bump/v$latest"
+          prs=$(gh pr list --head "$branch" --state all --json number --jq length)
           if [ "$(printf '%s\n' "$required" "$latest" | sort -V | tail -1)" = "$required" ] \
-            || git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            || [ "$prs" != 0 ]; then
             echo "nothing to do"
             exit 0
           fi
@@ -150,7 +157,7 @@ jobs:
 
           if [ "$MAJOR" = true ]; then
             git commit -am "payfurl/phpsdk v$LATEST: a new major, to migrate to"
-            git push origin "$BRANCH"
+            git push --force origin "$BRANCH"
             gh pr create --draft --base main --head "$BRANCH" --title "payfurl/phpsdk v$LATEST (new major: needs a migration)" --body \
               "payfurl/phpsdk v$LATEST is a new major version ([changelog]($sdk_changelog), and the SDK's UPGRADE.md). This draft only changes the constraint from ^$REQUIRED to ^$LATEST and the lock: the plugin's SDK calls (includes/class-payfurl-sdk.php) need migrating by hand, with the plugin's version and changelog entries.
 
@@ -173,7 +180,7 @@ jobs:
           mv readme.tmp readme.txt
 
           git commit -am "payfurl/phpsdk v$LATEST (plugin $next)"
-          git push origin "$BRANCH"
+          git push --force origin "$BRANCH"
           gh pr create --base main --head "$BRANCH" --title "payfurl/phpsdk v$LATEST (plugin $next)" --body \
             "Ships payfurl/phpsdk $LATEST ([changelog]($sdk_changelog)), the release now on Packagist, in place of $REQUIRED, and bumps the plugin to $next. The SDK is vendored in the plugin's zip, so stores get it with this release.
 
