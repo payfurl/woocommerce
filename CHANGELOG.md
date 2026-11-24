@@ -8,6 +8,13 @@ notes; `readme.txt`'s `== Changelog ==` is WordPress.org's shorter copy.
 
 ## [Unreleased]
 
+## [2.0.6] - 2026-11-24
+
+### Changed
+
+- Browser SDK updated from v4.11.4 to v4.11.5
+  ([SDK changelog](https://docs.payfurl.com/client_sdk/changelog)).
+
 ## [2.0.5] - 2026-11-20
 
 ### Changed
@@ -107,7 +114,8 @@ notes; `readme.txt`'s `== Changelog ==` is WordPress.org's shorter copy.
 
 First release on WordPress.org.
 
-[Unreleased]: https://github.com/payfurl/woocommerce/compare/v2.0.5...HEAD
+[Unreleased]: https://github.com/payfurl/woocommerce/compare/v2.0.6...HEAD
+[2.0.6]: https://github.com/payfurl/woocommerce/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/payfurl/woocommerce/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/payfurl/woocommerce/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/payfurl/woocommerce/compare/v2.0.2...v2.0.3
